@@ -1,0 +1,108 @@
+module Ch01 where
+
+idfun : (A : U) (x : A) -> A = \(A : U) (x : A) -> x
+
+idfun_better (A : U) (x : A) : A = x
+
+data bool = true | false
+
+not : bool -> bool = split
+ true -> false
+ false -> true
+
+or : bool -> bool -> bool = split
+  true -> split@(bool -> bool) with
+    true -> true
+    false -> true
+  false -> split@(bool -> bool) with
+    true -> true
+    false -> false
+
+
+or : bool -> bool -> bool = split
+  true -> split@(bool -> bool) with
+    true -> true
+    false -> false
+  false -> split@(bool -> bool) with
+    true -> false
+    false -> false
+
+-- sigma type
+Sigma (A : U) (P : A -> U) : U = (x : A) * P x
+-- first projection
+fst (A : U) (P : A -> U) (p : Sigma A P) : A = p.1
+--second projection
+snd (A : U) (P : A -> U) (p : Sigma A P) : P (fst A P p) = p.2
+--dependent pair
+pair (A : U) (B : A -> U) (x : A) (y : B x) : Sigma A B = (x, y)
+
+data nat = zero
+     | suc (n : nat)
+
+add (m : nat) : nat -> nat = split
+  zero -> m
+  suc n -> suc (add m n)
+
+
+mutual
+ even : nat -> bool = split
+  zero -> true
+  suc n -> odd n
+
+ odd : nat -> bool = split
+  zero -> false
+  suc n -> even n
+
+
+mutual
+ data V = N | pi (a : V) (P : T a -> V)
+
+ T : V -> U = split
+   N -> nat
+   pi a b -> (x : T a) -> T (b x)
+
+
+data list (A : U) = nil
+    | cons (a : A) (l : list A)
+
+head (A : U) (a : A) : list A -> A = split
+  nil -> a
+  cons x _ -> x
+
+
+Path (A : U) (a b : A) : U = PathP (<_> A) a b
+
+refl (A : U) (x : A) : Path A x x = <i> x
+
+truePath : Path bool true true = <i> true
+falsePath : Path bool false false = <i> false
+
+face0 (A : U) (a b : A) (p : Path A a b) : A = p @ 0
+
+notK : (b : bool) -> Path bool (not (not b)) b  = split
+  true -> <i> true
+  false -> <i> false
+
+addZerof : (m : nat) -> Path nat (add m zero) m = split
+  zero -> <i> zero
+  suc n -> <i> (suc n)
+
+
+cong (A B : U) (f : A -> B) (a b : A) (p : Path A a b) :
+  Path B (f a) (f b) = <i> f (p @ i)
+
+addZerol : (m : nat) -> Path nat m (add zero m) = split
+  zero -> <i> zero
+  suc n -> <i> suc (addZerol n @ i) -- cong nat nat suc (add zero n) n (addZeros n)
+
+addZeror : (m : nat) -> Path nat (add zero m) m = split
+  zero -> <i> zero
+  suc n -> <i> suc (addZeror n @ i) -- cong nat nat suc (add zero n) n (addZeros n)
+
+addSuc : (m n : nat) -> Path nat (suc (add m n)) (add (suc n) m) = split
+  zero -> ?
+  suc m' -> ?
+  
+addCommute : (m n : nat) -> Path nat (add n m) (add m n) = split
+  zero -> ?
+  suc m' -> ?
