@@ -99,10 +99,23 @@ addZeror : (m : nat) -> Path nat (add zero m) m = split
   zero -> <i> zero
   suc n -> <i> suc (addZeror n @ i) -- cong nat nat suc (add zero n) n (addZeros n)
 
-addSuc : (m n : nat) -> Path nat (suc (add m n)) (add (suc n) m) = split
-  zero -> ?
-  suc m' -> ?
-  
-addCommute : (m n : nat) -> Path nat (add n m) (add m n) = split
-  zero -> ?
-  suc m' -> ?
+{-
+addSuc : (m n : nat) -> Path nat (add (suc m) n) (suc (add m n)) = split
+  zero -> split@((n : nat) -> Path nat (add zero n) (suc (add zero n))) with
+     zero -> ?
+     suc n' -> ?
+  suc m' -> split@((n : nat) -> Path nat (add (suc m') n) (suc (add m' n))) with
+     zero -> ?
+     suc n' -> ?
+-}
+addSuc (m : nat) : (n : nat) -> Path nat (add (suc m) n) (suc (add m n)) = split
+     zero -> <i> suc m
+     suc n' -> <i> suc (addSuc m n' @ i)
+
+addCommute (m : nat) : (n : nat) -> Path nat (add m n) (add n m) = split
+  zero -> addZerol m
+  suc n' -> ?
+{-
+congbin (A B C : U) (f : A -> B -> C) (a a' : A) (b b' : B)
+        (p : Path A a a') (q : Path B b b') : Path C (f a b) (f a' b') = ?
+-}	
